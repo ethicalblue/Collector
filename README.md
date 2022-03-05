@@ -13,7 +13,7 @@ Overview of example phishing simulation (pentest) using Collector application.
 
 0x01. Complete documents with company or people which will be pentested. Act legally.
 
-0x02. Prepare e-mail addresses (you can buy domains), message templates and program or script to send e-mails. You can also sent e-mails manually.
+0x02. Prepare e-mail addresses (you can buy domains), message templates and program or script to send e-mails. You can also send e-mails manually.
 
 Here comes Collector application. 🙂
 
@@ -21,7 +21,7 @@ Here comes Collector application. 🙂
 
 0x04. Embed links in messages and send prepared e-mails to targets.
 
-0x05. Monitor which links have been clicked. There will be also IP addresses and timestamps collected.
+0x05. Monitor which links have been clicked. There are also IP addresses and timestamps collected.
 
 0x06. Print elegant reports for your boss/customer.
 
