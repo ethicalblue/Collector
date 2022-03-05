@@ -1,0 +1,146 @@
+﻿@page "/collected"
+@page "/collected/campaign/{campaign?}"
+@inject LoginService LoginService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor Accessor
+
+<PageTitle>Collected data</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/collected" />
+    return;
+}
+
+@if (string.IsNullOrEmpty(Campaign) && CampaignList != null)
+{
+    <h2><span class="fa fa-folder text-secondary"></span> File campaigns</h2>
+
+    <div class="text-silver mt-2 mb-2">Create new campaign</div>
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="collected/create">Create new campaign &raquo;</a>
+    </div>
+    <div class="text-silver mt-2 mb-2">Select campaign identifier</div>
+    @foreach (var campaignItem in CampaignList)
+    {
+        if (campaignItem == null)
+            continue;
+
+        <div class="lead ms-4">
+            <span class="fa fa-biohazard text-blue"></span> <a href="collected/campaign/@campaignItem">@campaignItem &raquo;</a>
+        </div>
+    }
+    <div class="text-silver mt-2 mb-2">Export data</div>
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="collected/export">Export data in specific format &raquo;</a>
+    </div>
+
+    <div class="text-silver mt-2 mb-2">
+        Collecting URL is:<br />
+        <div class="lead fw-normal ms-4 text-blue"><span class="fa fa-biohazard text-blue"></span> <span>https://</span>@Accessor?.HttpContext?.Request.Host.ToString()/collect</div>
+    </div>
+
+    <div class="d-flex mt-3">
+        <div class="p-3 bg-semi-dark flex-shrink-1">
+            <span class="fa fa-info-circle text-silver"></span> Targets are categorized into campaigns for clarity and easy management.
+        </div>
+    </div>
+}
+else
+{
+    <h2><a class="btn btn-link" href="collected">&laquo; Back</a> <span class="fa fa-folder text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> @Campaign <span class="text-secondary">(campaign)</span></h2>
+
+    <div class="mt-2 mb-2">
+        Sorting<br />
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetCollectedDataListAsync(DataSorting.Alphabetically))">Alphabetically</button>
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetCollectedDataListAsync(DataSorting.RecentlyActive))">Recently active</button>
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetCollectedDataListAsync(DataSorting.NotRecentlyActive))">Not recently active</button>
+    </div>
+
+    <div>Collected data</div>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Guid</td>
+                <td class="m-1">User</td>
+                <td class="m-1">Machine</td>
+                <td class="m-1 d-none d-md-block">DateTime</td>
+                <td class="m-1">Actions</td>
+            </tr>
+            @foreach (var data in CollectedData.Where(x => x.Campaign == Campaign))
+            {
+                <tr>
+                    <td class="m-1"><span class="text-nowrap text-white"><span class="fa fa-biohazard text-white"></span> @data.Id</span></td>
+                    <td class="font-monospace">@data.UserName</td>
+                    <td class="font-monospace">@data.MachineName</td>
+                    <td class="small d-none d-md-block">@data.CollectedDateTime</td>
+                    <td>
+                        <a href="collected/details/@data.Campaign/@data.Id">Details &raquo;</a>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="mt-1 mb-3">
+        <h3>Danger zone</h3>
+        <button class="btn btn-danger btn-sm" @onclick="(() => DeleteCampaignAsync())">Click here to delete this campaign</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    List<Collected> CollectedData = new();
+
+    List<string?> CampaignList = new();
+
+    long? CollectedDataCounter = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await GetCollectedDataListAsync(DataSorting.RecentlyActive);
+        await GetCampaignListAsync();
+
+        CollectedDataCounter = await CollectorService.GetCollectedDataCountAsync();
+    }
+
+    private async Task GetCollectedDataListAsync(DataSorting sorting)
+    {
+        if (sorting == DataSorting.Alphabetically)
+            CollectedData = (await CollectorService.GetCollectedDataAsync() ?? new()).OrderBy(x => x.MachineName).ThenBy(y => y.UserName).ToList();
+        else if (sorting == DataSorting.NotRecentlyActive)
+            CollectedData = (await CollectorService.GetCollectedDataAsync() ?? new()).OrderBy(x => x.CollectedDateTime).ToList();
+        else if (sorting == DataSorting.RecentlyActive)
+            CollectedData = (await CollectorService.GetCollectedDataAsync() ?? new()).OrderByDescending(x => x.CollectedDateTime).ToList();
+    }
+
+    private async Task GetCampaignListAsync()
+    {
+        CampaignList = await CollectorService.GetCampaignsAsync() ?? new();
+    }
+
+    private async Task DeleteCampaignAsync()
+    {
+        if (Campaign != null)
+            await CollectorService.DeleteCampaignAsync(Campaign);
+
+        NavigationManager.NavigateTo("/collected", true);
+    }
+
+    private enum DataSorting
+    {
+        Alphabetically, RecentlyActive, NotRecentlyActive
+    }
+}

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\iamda\Desktop\Ethical Blue\CollectorApp\CollectorApp\CollectorApp\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2022-03-05T14:53:35.1678689Z;True|2022-03-05T15:40:45.3472611+01:00;True|2022-03-05T15:19:51.0589472+01:00;True|2022-03-05T15:11:39.1570890+01:00;True|2022-03-05T14:57:08.0661157+01:00;True|2022-03-05T14:56:22.8140436+01:00;True|2022-03-05T14:44:03.3739421+01:00;True|2022-03-05T14:38:53.8184360+01:00;True|2022-03-05T14:15:55.7385807+01:00;</History>
+  </PropertyGroup>
+</Project>

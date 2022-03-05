@@ -1,0 +1,31 @@
+﻿@page "/collect"
+@inject CollectorApp.Data.ApplicationDbContext dbContext;
+@inject IHttpContextAccessor Accessor
+@model CollectorApp.Pages.CollectModel
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>/collect</title>
+    <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+</head>
+
+<body>
+    <div class="bg-biohazard">
+        <form method="post" action="collect">
+            <input name="CampaignField" type="hidden" value="" />
+            <input name="UserNameField" type="hidden" value="" />
+            <input name="MachineNameField" type="hidden" value="" />
+            <input name="BIOSSerialNumberField" type="hidden" value="" />
+        </form>
+    </div>
+</body>
+</html>
+
+@{
+
+}

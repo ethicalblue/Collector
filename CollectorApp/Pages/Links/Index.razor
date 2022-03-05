@@ -1,0 +1,153 @@
+﻿@page "/links"
+@page "/links/campaign/{campaign?}"
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Links</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/links" />
+    return;
+}
+
+@if (string.IsNullOrEmpty(Campaign) && CampaignList != null)
+{
+    <h2><span class="fa fa-link text-secondary"></span> Link campaigns</h2>
+
+    <div class="text-silver mt-2 mb-2">Create new link/campaign</div>
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="links/create">Create new link/campaign &raquo;</a>
+    </div>
+    <div class="text-silver mt-2 mb-2">Select campaign identifier</div>
+    @foreach (var campaignItem in CampaignList)
+    {
+        if (campaignItem == null)
+            continue;
+
+        <div class="lead ms-4">
+            <span class="fa fa-biohazard text-blue"></span> <a href="links/campaign/@campaignItem">@campaignItem &raquo;</a>
+        </div>
+    }
+    <div class="text-silver mt-2 mb-2">Export links</div>
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="links/export">Links in spreading format &raquo;</a>
+    </div>
+    <div class="d-flex mt-3">
+        <div class="p-3 bg-semi-dark flex-shrink-1">
+            <span class="fa fa-info-circle text-silver"></span> Links are categorized into campaigns for clarity and easy management.
+        </div>
+    </div>
+}
+else
+{
+    <h2><a class="btn btn-link" href="links">&laquo; Back</a> <span class="fa fa-link text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> @Campaign <span class="text-secondary">(campaign)</span></h2>
+
+    <div class="mt-2 mb-2">
+        Sorting<br />
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetLinkListAsync(LinkSorting.MostClicked))">Most clicked</button>
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetLinkListAsync(LinkSorting.LeastClicked))">Least clicked</button>
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetLinkListAsync(LinkSorting.RecentlyActive))">Recently active</button>
+        <button class="btn btn-dark btn-sm me-2 mb-2" @onclick="(() => GetLinkListAsync(LinkSorting.NotRecentlyActive))">Not recently active</button>
+    </div>
+
+    <div>Links</div>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Guid</td>
+                <td class="m-1 d-none d-md-block">Description</td>
+                <td class="m-1">Clicked?</td>
+                <td class="m-1 d-none d-md-block">Activity</td>
+                <td class="m-1">Actions</td>
+            </tr>
+            @foreach (var link in Links.Where(x => x.Campaign == Campaign))
+            {
+                <tr>
+                    <td class="m-1"><span class="text-nowrap text-white"><span class="fa fa-biohazard text-white"></span> @link.Id</span></td>
+                    <td class="small d-none d-md-block">@link.Description</td>
+                    <td>
+                        @if (link.LinkWasClicked ?? false)
+                        {
+                            <span class="text-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">No</span>
+                        }
+                        [@link.ClickCounter]
+                    </td>
+                    <td class="d-none d-md-block">@link.ClickedDateTime</td>
+                    <td>
+                        <a href="links/details/@link.Campaign/@link.Id">Details &raquo;</a>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="mt-1 mb-3">
+        <h3>Danger zone</h3>
+        <button class="btn btn-danger btn-sm" @onclick="(() => DeleteCampaignAsync())">Click here to delete this campaign</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    List<Link> Links = new();
+
+    List<string?> CampaignList = new();
+
+    long? LinkCounter = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await GetLinkListAsync(LinkSorting.RecentlyActive);
+        await GetCampaignListAsync();
+
+        LinkCounter = await LinkService.GetLinkCountAsync();
+    }
+
+    private async Task GetLinkListAsync(LinkSorting sorting)
+    {
+        if (sorting == LinkSorting.LeastClicked)
+            Links = (await LinkService.GetLinksAsync() ?? new()).OrderBy(x => x.ClickCounter).ToList();
+        else if (sorting == LinkSorting.MostClicked)
+            Links = (await LinkService.GetLinksAsync() ?? new()).OrderByDescending(x => x.ClickCounter).ToList();
+        else if (sorting == LinkSorting.NotRecentlyActive)
+            Links = (await LinkService.GetLinksAsync() ?? new()).OrderBy(x => x.ClickedDateTime).ToList();
+        else if (sorting == LinkSorting.RecentlyActive)
+            Links = (await LinkService.GetLinksAsync() ?? new()).OrderByDescending(x => x.ClickedDateTime).ToList();
+    }
+
+    private async Task GetCampaignListAsync()
+    {
+        CampaignList = await LinkService.GetCampaignsAsync() ?? new();
+    }
+
+    private async Task DeleteCampaignAsync()
+    {
+        if (Campaign != null)
+            await LinkService.DeleteCampaignAsync(Campaign);
+
+        NavigationManager.NavigateTo("/links", true);
+    }
+
+    private enum LinkSorting
+    {
+        LeastClicked, MostClicked,
+        RecentlyActive, NotRecentlyActive
+    }
+}

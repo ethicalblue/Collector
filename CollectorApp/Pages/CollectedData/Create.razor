@@ -1,0 +1,59 @@
+﻿@page "/collected/create"
+@inject LoginService LoginService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Collected data</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/collected/create" />
+    return;
+}
+
+<h2><a class="btn btn-link" href="collected">&laquo; Back</a> <span class="fa fa-folder text-secondary"></span> Create campaign</h2>
+
+<form @onsubmit="AddNewCampaignAsync">
+    <div class="mb-2">
+        <label class="lead">
+            Campaign<br />
+            <input @bind="NewCollected.Campaign" type="text" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Create campaign</button>
+</form>
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    Collected NewCollected = new Collected();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await Task.CompletedTask;
+    }
+
+    private async Task AddNewCampaignAsync()
+    {
+        var campaign = LinkHelpers.MakeStringURLFriendly(NewCollected.Campaign ?? "empty");
+
+        NewCollected.Campaign = campaign;
+        NewCollected.UserName = "placeholder";
+        NewCollected.MachineName = "placeholder";
+        NewCollected.BIOSSerialNumber = "placeholder";
+        NewCollected.CollectedDateTime = DateTime.MinValue;
+        NewCollected.HostnameIP = "::1";
+
+        await CollectorService.AddCollectedDataAsync(NewCollected);
+        NavigationManager.NavigateTo("/collected", true);
+    }
+}

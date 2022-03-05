@@ -1,0 +1,48 @@
+﻿@inject LoginService LoginService
+@inject NavigationManager NavigationManager
+
+<h2>Login</h2>
+
+<form @onsubmit="TryToLogIn">
+    <div class="mb-2">
+        <label class="lead">
+            Username<br />
+            <input @bind="InputLogin" type="text" style="width: 21em;" class="form-control mt-1 mb-2" />
+        </label>
+    </div>
+    <div class="mb-2">
+        <label class="lead">
+            Password<br />
+            <input @bind="InputPassword" type="password" style="width: 21em;" class="form-control mt-1 mb-2" />
+        </label>
+    </div>
+    <button class="btn btn-dark" type="submit"><span class="fa fa-power-off"></span> Login</button>
+    <div class="mt-4 mb-2">
+        <a href="register">Click here to create an account &raquo;</a>
+    </div>
+</form>
+
+@code {
+    [Parameter]
+    public string? Redirect { get; set; }
+
+    private string? InputLogin { get; set; }
+    private string? InputPassword { get; set; }
+
+    private async Task TryToLogIn()
+    {
+        var login = await LoginService.GetLoginAsync();
+
+        if (login == null)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+
+        if (InputLogin != null && InputPassword != null)
+        {
+            _ = await LoginService.LogInAsync(InputLogin, InputPassword, ProtectedStorage);
+
+            NavigationManager.NavigateTo("/" + Redirect?.TrimStart('/'), true);
+        }
+    }
+}

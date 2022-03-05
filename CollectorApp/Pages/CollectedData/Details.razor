@@ -1,0 +1,77 @@
+﻿@page "/collected/details/{campaign?}/{dataid?}"
+@inject LoginService LoginService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Collected data</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/collected" />
+    return;
+}
+
+@if (string.IsNullOrEmpty(Campaign) == false && DataId != null)
+{
+    <h2><a class="btn btn-link" href="collected/campaign/@Campaign">&laquo; Back</a> <span class="fa fa-folder text-secondary"></span> Details: @Campaign/@DataId/@CollectedData.CollectedDateTime</h2>
+    <div>Collected data</div>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Guid</td>
+                <td class="m-1">User</td>
+                <td class="m-1">Machine</td>
+                <td class="m-1">DateTime</td>
+                <td class="m-1">BIOS Serial Number</td>
+            </tr>
+            <tr>
+                <td><span class="text-nowrap text-white"><span class="fa fa-biohazard text-white"></span> @CollectedData.Id</span></td>
+                <td class="font-monospace">@CollectedData.UserName</td>
+                <td class="font-monospace">@CollectedData.MachineName</td>
+                <td class="small">@CollectedData.CollectedDateTime</td>
+                <td class="font-monospace">
+                    @CollectedData.BIOSSerialNumber
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="mt-1 mb-3">
+        <h3>Danger zone</h3>
+        <button class="btn btn-danger btn-sm" @onclick="(() => DeleteCollectedDataAsync())">Click here to delete this item</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+    [Parameter]
+    public string? DataId { get; set; }
+
+    Collected CollectedData = new Collected();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        if (DataId != null)
+        {
+            CollectedData = await CollectorService.GetSingleCollectedDataAsync(int.Parse(DataId)) ?? new Collected();
+        }
+    }
+
+    private async Task DeleteCollectedDataAsync()
+    {
+        if (Campaign != null)
+            await CollectorService.DeleteCollectedDataAsync(CollectedData);
+
+        NavigationManager.NavigateTo("/collected/details/" + Campaign, true);
+    }
+}

@@ -1,0 +1,124 @@
+﻿@page "/links/export"
+@page "/links/export/{campaign?}"
+@using System.IO
+@inject LoginService LoginService
+@inject IJSRuntime JS
+@inject LinkService LinkService
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor Accessor
+
+<PageTitle>Links</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/links/export" />
+    return;
+}
+
+@if (string.IsNullOrEmpty(Campaign))
+{
+    <h2><a class="btn btn-link" href="links">&laquo; Back</a> <span class="fa fa-link text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> Export links</h2>
+
+    <div class="text-silver mt-2 mb-2">Select campaign identifier</div>
+    @foreach (var campaignItem in CampaignList)
+    {
+        if (campaignItem == null)
+            continue;
+
+        <div class="lead ms-4">
+            <span class="fa fa-biohazard text-blue"></span> <a href="links/export/@campaignItem">@campaignItem &raquo;</a>
+        </div>
+    }
+    <div class="d-flex mt-3">
+        <div class="p-3 bg-semi-dark flex-shrink-1">
+            <span class="fa fa-info-circle text-silver"></span> Links are categorized into campaigns for clarity and easy management.
+        </div>
+    </div>
+}
+else
+{
+    <h2><a class="btn btn-link" href="links/export">&laquo; Back</a> <span class="fa fa-link text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> Export links</h2>
+
+    <div class="mb-2">
+        <label for="domainName">Domain</label>
+        <div class="input-group short-control">
+            <input @bind="DomainName" id="domainName" type="text" class="form-control me-2" />
+            <button @onclick="GetCampaignListAsync" class="btn btn-dark" type="button">Save</button>
+        </div>
+    </div>
+
+    <div>Campaign: @Campaign</div>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">URL</td>
+                <td class="m-1">RedirectToURL</td>
+                <td class="m-1">Description</td>
+            </tr>
+            @foreach (var link in Links.Where(x => x.Campaign == Campaign).OrderBy(x => x.Id))
+            {
+                <tr>
+                    <td><span class="text-nowrap text-blue"><span class="fa fa-biohazard text-blue"></span> @DomainName.TrimEnd('/')/click/@link.Campaign/@link.Id</span></td>
+                    <td>@link.RedirectToURL</td>
+                    <td>@link.Description</td>
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="mb-3 mt-2">
+        <button class="btn btn-dark" @onclick="() => DownloadFileFromStream(Campaign ?? string.Empty)">Download links as .txt file</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    List<Link> Links = new();
+
+    List<string?> CampaignList = new();
+
+    string? DomainName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        DomainName = "https://" + Accessor?.HttpContext?.Request.Host.ToString();
+
+        await GetCampaignListAsync();
+    }
+
+    private async Task GetCampaignListAsync()
+    {
+        CampaignList = (await LinkService.GetCampaignsAsync() ?? new()).OrderBy(x => x).ToList();
+
+        Links = (await LinkService.GetLinksAsync() ?? new()).OrderBy(x => x.Id).ToList();
+    }
+
+    private async Task DownloadFileFromStream(string selectedCampaign)
+    {
+        string text = string.Empty;
+
+        foreach (var link in Links.Where(x => x.Campaign == selectedCampaign).OrderBy(x => x.Id))
+        {
+            text += (DomainName ?? string.Empty).TrimEnd('/') + "/click/" + link.Campaign + "/" + link.Id + Environment.NewLine;
+        }
+
+        var fileStream = new MemoryStream(System.Text.Encoding.Unicode.GetBytes(text));
+        var fileName = "links.txt";
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+        //function downloadFileFromStream is placed in _Layout.cshtml
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+}

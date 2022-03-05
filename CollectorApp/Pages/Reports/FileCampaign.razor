@@ -1,0 +1,82 @@
+﻿@page "/reports/filecampaign/{campaign?}"
+@layout EmptyLayout
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject CollectorService CollectorService
+@inject IHttpContextAccessor Accessor
+
+@if (IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if (IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/reports" />
+    return;
+}
+
+<div class="text-secondary mb-3"><span class="fa fa-print"></span> Report created @DateTime.Now.ToString("'on' dd-MM-yyyy 'at' HH:mm") by ethical.blue Collector app.</div>
+
+<h2 class="h4"><span class="fa fa-folder"></span> File campaign: @Campaign</h2>
+    <p class="lead">
+        There have been <span class="text-danger">@collectedCount <span>item</span>@SingularOrPlural(collectedCount)</span> collected during campaign.
+    </p>
+    <h2 class="h4"><span class="fa fa-biohazard"></span> Compromised machines during campaign @Campaign</h2>
+    <p class="lead">
+        Security analyst(s) has/have been able to run executable files on the following machines.
+    </p>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr>
+                <td class="m-1">DateTime</td>
+                <td class="m-1">User@Machine</td>
+                <td class="m-1 d-none d-md-block">BIOS Serial Number</td>
+            </tr>
+            @foreach (var item in CollectorService?.GetCollectedDataAsync().Result?.OrderByDescending(x => x.CollectedDateTime).ToList() ?? new List<CollectorApp.Data.Collected>())
+            {
+                <tr>
+                    <td class="m-1">@item.CollectedDateTime</td>
+                    <td class="font-monospace m-1">@item.UserName&#64;@item.MachineName</td>
+                    <td class="font-monospace m-1 d-none d-md-block">@item.BIOSSerialNumber</td>
+                </tr>
+            }
+        </table>
+    </div>
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Type { get; set; }
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    long? linkCount { get; set; }
+    long? clickedLongCount { get; set; }
+    long? notClickedLongCount { get; set; }
+    long? clickedPercent { get; set; }
+    long? notClickedPercent { get; set; }
+    long? collectedCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        linkCount = (await LinkService.GetLinksAsync() ?? new()).LongCount();
+        clickedLongCount = (await LinkService.GetLinksAsync() ?? new()).Where(x => x.LinkWasClicked == true).LongCount();
+        notClickedLongCount = (await LinkService.GetLinksAsync() ?? new()).Where(x => x.LinkWasClicked == false).LongCount();
+        clickedPercent = (long?)((clickedLongCount / (linkCount == 0.0 ? 1.0 : linkCount)) * 100);
+        notClickedPercent = (long?)((notClickedLongCount / (linkCount == 0.0 ? 1.0 : linkCount)) * 100);
+        collectedCount = await CollectorService.GetCollectedDataCountAsync();
+    }
+
+    string SingularOrPlural(long? num)
+    {
+        if (num == 1)
+            return string.Empty;
+        else
+            return "s";
+    }
+}

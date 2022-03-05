@@ -1,0 +1,60 @@
+﻿@page "/"
+@inject LoginService LoginService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Index</PageTitle>
+
+@if (IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if (IsAuthenticated == false)
+{
+    <div class="mb-2">
+        <img alt="" class="img-fluid" src="/images/collector.png" />
+    </div>
+    <LoginPrompt Redirect="" />
+    <AlertPrompt Title="How is Collector app working for you?" />
+    return;
+}
+
+<button class="float-end btn btn-danger" @onclick="LogOff"><span class="fa fa-power-off"></span> Log off</button>
+
+<div class="mb-2">
+    <img alt="" class="img-fluid" src="/images/collector.png" />
+</div>
+
+<p>Last incorrect login: <code class="text-danger">@LastIncorrectLogin</code></p>
+
+<AlertPrompt Title="How is Collector app working for you?" />
+
+@code {
+    private string? InputLogin { get; set; }
+    private string? InputPassword { get; set; }
+
+    private string? LastIncorrectLogin { get; set; }
+
+    private bool? IsAuthenticated { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        var login = await LoginService.GetLoginAsync();
+
+        if (login != null)
+        {
+            var date = login.LastIncorrectLogin ?? DateTime.MinValue;
+
+            LastIncorrectLogin = date.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    private async Task LogOff()
+    {
+        await LoginService.LogOffAsync();
+        NavigationManager.NavigateTo("/", true);
+    }
+}

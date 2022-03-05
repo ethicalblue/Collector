@@ -1,0 +1,71 @@
+﻿@page "/links/create/{campaign?}"
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Links</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/links" />
+    return;
+}
+
+<h2><a class="btn btn-link" href="links">&laquo; Back</a> <span class="fa fa-link text-secondary"></span> Create link/campaign</h2>
+
+<form @onsubmit="AddNewLinkAsync">
+    <div class="mb-2">
+        <label class="lead">
+            Campaign<br />
+            <input @bind="NewLink.Campaign" type="text" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+    <div class="mb-2">
+        <label class="lead">
+            Description<br />
+            <input @bind="NewLink.Description" type="text" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+    <div class="mb-2">
+        <label class="lead">
+            RedirectToURL<br />
+            <input @bind="NewLink.RedirectToURL" type="text" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+
+    <button class="btn btn-dark" type="submit">Create link</button>
+</form>
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    Link NewLink = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await Task.CompletedTask;
+    }
+
+    private async Task AddNewLinkAsync()
+    {
+        NewLink.ClickCounter = 0;
+        NewLink.ClickedDateTime = DateTime.MinValue;
+        NewLink.HostnameIP = "empty";
+        NewLink.LinkWasClicked = false;
+        NewLink.Campaign = LinkHelpers.MakeStringURLFriendly(NewLink.Campaign ?? "empty");
+
+        await LinkService.AddLinkAsync(NewLink);
+        NavigationManager.NavigateTo("/links/campaign/" + Campaign, true);
+    }
+}

@@ -1,0 +1,56 @@
+﻿@page "/samples"
+@inject IHttpContextAccessor Accessor
+
+<PageTitle>Samples</PageTitle>
+
+<h2><span class="fa fa-biohazard text-secondary"></span> Harmless sample for file campaigns</h2>
+
+<div class="text-silver mt-2 mb-2">C#.NET Console Application</div>
+
+<div class="mb-2">
+    <label for="domainName">Domain</label>
+    <div class="input-group short-control">
+        <input @bind="DomainName" id="domainName" type="text" class="form-control me-2" />
+        <button class="btn btn-dark" type="button">Save</button>
+    </div>
+</div>
+
+<div class="font-monospace mb-4 mt-2" style='white-space: pre-wrap;'>
+    <span style='color:#cccccc;'>//Program.cs</span>
+    <span style='color:#00aaff;'>using</span> System<span style='color:#999999;'>.</span>Management<span style='color:#999999;'>;</span>
+
+    <span style='color:#008073;'>#region </span><span style='color:#008073;'>Sample settings</span>
+    <span style='color:#00aaff;'>string</span> collectorURL <span style='color:#999999;'>=</span> <span style='color:#ff0000;'>"</span><span style='color:#ff0000;'><span>@DomainName.TrimEnd('/')</span>/collect</span><span style='color:#ff0000;'>"</span><span style='color:#999999;'>;</span>
+    <span style='color:#00aaff;'>string</span> campaignName <span style='color:#999999;'>=</span> <span style='color:#ff0000;'>"</span><span style='color:#ff0000;'>campaign001</span><span style='color:#ff0000;'>"</span><span style='color:#999999;'>;</span>
+    <span style='color:#008073;'>#endregion</span>
+
+    <span style='color:#008073;'>#pragma warning disable CA1416</span>
+    <span style='color:#00ff00;'>ManagementObjectSearcher</span> searcher <span style='color:#999999;'>=</span> <span style='color:#00aaff;'>new</span><span style='color:#999999;'>(</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>SELECT * FROM Win32_BIOS</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+    <span style='color:#00ff00;'>ManagementObject</span>? obj <span style='color:#999999;'>=</span> searcher<span style='color:#999999;'>.</span>Get<span style='color:#999999;'>(</span><span style='color:#999999;'>)</span><span style='color:#999999;'>.</span>Cast<span style='color:#999999;'>&lt;</span><span style='color:#00ff00;'>ManagementObject</span><span style='color:#999999;'>></span><span style='color:#999999;'>(</span><span style='color:#999999;'>)</span><span style='color:#999999;'>.</span>FirstOrDefault<span style='color:#999999;'>(</span><span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+
+    <span style='color:#00aaff;'>if</span> <span style='color:#999999;'>(</span>obj <span style='color:#999999;'>=</span><span style='color:#999999;'>=</span> <span style='color:#00aaff;'>null</span><span style='color:#999999;'>)</span> <span style='color:#00aaff;'>return</span><span style='color:#999999;'>;</span>
+
+    <span style='color:#00aaff;'>string</span>? BIOSSerialNumber <span style='color:#999999;'>=</span> obj<span style='color:#999999;'>[</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>SerialNumber</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>]</span><span style='color:#999999;'>.</span>ToString<span style='color:#999999;'>(</span><span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+
+    <span style='color:#00ff00;'>HttpClient</span> httpClient <span style='color:#999999;'>=</span> <span style='color:#00aaff;'>new</span><span style='color:#999999;'>(</span><span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+    <span style='color:#00aaff;'>var</span> content <span style='color:#999999;'>=</span> <span style='color:#00aaff;'>new</span> <span style='color:#00ff00;'>FormUrlEncodedContent</span><span style='color:#999999;'>(</span><span style='color:#00aaff;'>new</span><span style='color:#999999;'>[</span><span style='color:#999999;'>]</span>
+    <span style='color:#999999;'>{</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#00aaff;'>new</span> KeyValuePair<span style='color:#999999;'>&lt;</span><span style='color:#00aaff;'>string</span><span style='color:#999999;'>,</span> <span style='color:#00aaff;'>string</span><span style='color:#999999;'>></span><span style='color:#999999;'>(</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>CampaignField</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>,</span> campaignName<span style='color:#999999;'>)</span><span style='color:#999999;'>,</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#00aaff;'>new</span> KeyValuePair<span style='color:#999999;'>&lt;</span><span style='color:#00aaff;'>string</span><span style='color:#999999;'>,</span> <span style='color:#00aaff;'>string</span><span style='color:#999999;'>></span><span style='color:#999999;'>(</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>UserNameField</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>,</span> Environment<span style='color:#999999;'>.</span>UserName<span style='color:#999999;'>)</span><span style='color:#999999;'>,</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#00aaff;'>new</span> KeyValuePair<span style='color:#999999;'>&lt;</span><span style='color:#00aaff;'>string</span><span style='color:#999999;'>,</span> <span style='color:#00aaff;'>string</span><span style='color:#999999;'>></span><span style='color:#999999;'>(</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>MachineNameField</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>,</span> Environment<span style='color:#999999;'>.</span>MachineName<span style='color:#999999;'>)</span><span style='color:#999999;'>,</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#00aaff;'>new</span> KeyValuePair<span style='color:#999999;'>&lt;</span><span style='color:#00aaff;'>string</span><span style='color:#999999;'>,</span> <span style='color:#00aaff;'>string</span><span style='color:#999999;'>></span><span style='color:#999999;'>(</span><span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>BIOSSerialNumberField</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>,</span> BIOSSerialNumber ?? <span style='color:#00c4c4;'>"</span><span style='color:#00c4c4;'>empty</span><span style='color:#00c4c4;'>"</span><span style='color:#999999;'>)</span>
+    <span style='color:#999999;'>}</span><span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+
+    <span style='color:#00aaff;'>await</span> httpClient<span style='color:#999999;'>.</span>PostAsync<span style='color:#999999;'>(</span>collectorURL<span style='color:#999999;'>,</span> content<span style='color:#999999;'>)</span><span style='color:#999999;'>;</span>
+</div>
+
+@code {
+    string? DomainName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        DomainName = "https://" + Accessor?.HttpContext?.Request.Host.ToString();
+
+        await Task.CompletedTask;
+    }
+}

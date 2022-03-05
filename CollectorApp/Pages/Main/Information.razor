@@ -1,0 +1,42 @@
+﻿@page "/information"
+@inject IHttpContextAccessor Accessor
+
+<h2>Information</h2>
+
+<div class="table-responsive">
+    <table class="table table-dark table-borderless table-hover">
+        <thead>
+            <tr>
+                <td class="text-silver">Name</td>
+                <td class="text-silver">Value</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>IP Address</td>
+                <td>@RemoteIPAddress</td>
+            </tr>
+            <tr>
+                <td>User Agent</td>
+                <td>@RemoteUserAgent</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private string? RemoteIPAddress { get; set; }
+    private string? RemoteUserAgent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        RemoteIPAddress = Accessor.HttpContext?.Request.Headers["X-Forwarded-For"];
+
+        if (string.IsNullOrEmpty(RemoteIPAddress))
+            RemoteIPAddress = Accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+        RemoteUserAgent = Accessor.HttpContext?.Request.Headers["User-Agent"];
+
+        await Task.CompletedTask;
+    }
+}

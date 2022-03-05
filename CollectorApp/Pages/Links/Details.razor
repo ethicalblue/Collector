@@ -1,0 +1,125 @@
+﻿@page "/links/details/{campaign?}/{linkid?}"
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor Accessor
+
+<PageTitle>Links</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/links" />
+    return;
+}
+
+@if (string.IsNullOrEmpty(Campaign) == false && LinkId != null)
+{
+    <h2><a class="btn btn-link" href="links/campaign/@Campaign">&laquo; Back</a> <span class="fa fa-link text-secondary"></span> Details: @Campaign/@LinkId</h2>
+
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Name</td>
+                <td class="m-1">Value</td>
+            </tr>
+            <tr>
+                <td>Guid</td>
+                <td>@SelectedLink.Id</td>
+            </tr>
+            <tr>
+                <td>Campaign</td>
+                <td>@SelectedLink.Campaign</td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td>@SelectedLink.Description</td>
+            </tr>
+            <tr>
+                <td>Clicked?</td>
+                <td>
+                    @if (SelectedLink.LinkWasClicked ?? false)
+                    {
+                        <span class="text-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">No</span>
+                    }
+                    [@SelectedLink.ClickCounter]
+                </td>
+            </tr>
+            <tr>
+                <td>Hostname/IP</td>
+                <td>@SelectedLink.HostnameIP</td>
+            </tr>
+            <tr>
+                <td>Last active</td>
+                <td>@SelectedLink.ClickedDateTime</td>
+            </tr>
+            <tr>
+                <td>RedirectToURL</td>
+                <td>@SelectedLink.RedirectToURL</td>
+            </tr>
+            <tr>
+                <td>Actions</td>
+                <td>
+                    <a href="links/edit/@SelectedLink.Campaign/@SelectedLink.Id">Edit &raquo;</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mt-1 mb-3">
+        <h3>URL for spreading</h3>
+        <div class="mb-2">
+            <label for="domainName">Domain</label>
+            <div class="input-group short-control">
+                <input @bind="DomainName" id="domainName" type="text" class="form-control me-2" />
+                <button class="btn btn-dark" type="button">Save</button>
+            </div>
+        </div>
+        <span class="text-blue"><span class="fa fa-biohazard text-blue"></span> @DomainName.TrimEnd('/')/click/@Campaign/@LinkId</span>
+    </div>
+
+    <div class="mt-1 mb-3">
+        <h3>Danger zone</h3>
+        <button class="btn btn-danger btn-sm" @onclick="(() => DeleteSelectedLinkAsync(SelectedLink))">Click here to delete this item</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+    [Parameter]
+    public string? LinkId { get; set; }
+
+    Link SelectedLink = new();
+
+    string? DomainName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        DomainName = "https://" + Accessor?.HttpContext?.Request.Host.ToString();
+
+        if (LinkId != null)
+        {
+            SelectedLink = await LinkService.GetLinkAsync(int.Parse(LinkId)) ?? new();
+        }
+    }
+
+    private async Task DeleteSelectedLinkAsync(Link link)
+    {
+        await LinkService.DeleteLinkAsync(link);
+        NavigationManager.NavigateTo("/links/campaign/" + Campaign, true);
+    }
+}

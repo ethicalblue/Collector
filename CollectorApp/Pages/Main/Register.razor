@@ -1,0 +1,59 @@
+﻿@page "/register"
+@inject LoginService LoginService
+
+<h2>Create login</h2>
+
+<form @onsubmit="CreateLoginAsync">
+    <div class="mb-2">
+        <label class="lead">
+            Username<br />
+            <input @bind="InputLogin" type="text" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+    <div class="mb-2">
+        <label class="lead">
+            Password<br />
+            <input @bind="InputPassword" type="password" class="form-control short-control mt-1 mb-2" />
+        </label>
+    </div>
+    <button class="btn btn-dark" type="submit"><span class="fa fa-power-off"></span> Create login</button>
+    <div class="@MessageCssClass">@Message</div>
+</form>
+
+@code {
+
+    private string? InputLogin { get; set; }
+    private string? InputPassword { get; set; }
+
+    private string? Message { get; set; }
+    private string? MessageCssClass { get; set; }
+
+    private async Task CreateLoginAsync()
+    {
+        var login = await LoginService.GetLoginAsync();
+
+        if (login == null)
+        {
+            if (InputLogin != null && InputPassword != null)
+            {
+                var tuple = await LoginService.GetPasswordHash(InputPassword);
+
+                await LoginService.AddLoginAsync(new()
+                    {
+                        UserName = InputLogin,
+                        PasswordHash = tuple.Item1,
+                        PasswordSalt = tuple.Item2,
+                        LastIncorrectLogin = DateTime.MinValue
+                    });
+
+                Message = "System administrator account created successfully.";
+                MessageCssClass = "text-success mt-3 mb-3 p-2 bg-dark";
+            }
+        }
+        else
+        {
+            Message = "System administrator account already exists. I cannot create another account.";
+            MessageCssClass = "text-danger mt-3 mb-3 p-2 bg-dark";
+        }
+    }
+}

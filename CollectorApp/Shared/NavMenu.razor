@@ -1,0 +1,62 @@
+﻿@using CollectorApp.Data
+@inject LoginService LoginService
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Collector</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="fa fa-home me-2" aria-hidden="true"></span> Index
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="links">
+                <span class="fa fa-link me-2" aria-hidden="true"></span> Links
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="collected">
+                <span class="fa fa-folder me-2" aria-hidden="true"></span> Collected
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="reports">
+                <span class="fa fa-print me-2" aria-hidden="true"></span> Reports
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="archived">
+                <span class="fa fa-archive me-2" aria-hidden="true"></span> Archived
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="samples">
+                <span class="fa fa-biohazard me-2" aria-hidden="true"></span> Samples
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="information">
+                <span class="fa fa-info-circle me-2" aria-hidden="true"></span> Information
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

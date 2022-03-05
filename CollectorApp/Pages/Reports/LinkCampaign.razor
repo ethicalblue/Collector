@@ -1,0 +1,93 @@
+﻿@page "/reports/linkcampaign/{campaign?}"
+@layout EmptyLayout
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject CollectorService CollectorService
+@inject IHttpContextAccessor Accessor
+
+@if (IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if (IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/reports" />
+    return;
+}
+
+<div class="text-secondary mb-3"><span class="fa fa-print"></span> Report created @DateTime.Now.ToString("'on' dd-MM-yyyy 'at' HH:mm") by ethical.blue Collector app.</div>
+
+<h2 class="h4"><span class="fa fa-biohazard"></span><span class="fa fa-link"></span>  Link campaign: @Campaign</h2>
+
+    <p class="lead">
+        The campaign has contained @linkCount <span>link</span>@SingularOrPlural(linkCount).<br />
+        There have been <span class="text-danger">@clickedLongCount <span>link</span>@SingularOrPlural(clickedLongCount) clicked</span> and <span class="text-blue">@notClickedLongCount not clicked</span>.<br />
+        The clicked links are the <span class="text-danger">@clickedPercent<span>%</span></span> of all links in this campaign.<br />
+        Progress bar: <br />
+        <span class="text-secondary">[</span>
+        @for (int i = 0; i < clickedPercent / 10; i++)
+        {
+            <span class="text-danger">&#x25B0;</span>
+        }
+        @for (int i = 0; i < 10 - (clickedPercent / 10); i++)
+        {
+            <span class="text-blue">&#x25B0;</span>
+        }
+        <span class="text-secondary">]</span>
+    </p>
+    <h2 class="h4"><span class="fa fa-link"></span> Top clicked links in campaign @Campaign</h2>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr>
+                <td class="m-1">Clicks</td>
+                <td class="m-1">Description</td>
+                <td class="m-1 d-none d-md-block">RedirectToURL</td>
+            </tr>
+            @foreach (var item in LinkService.GetLinksAsync().Result?.Where(x => x.LinkWasClicked == true).OrderByDescending(y => y.ClickCounter).ToList() ?? new List<CollectorApp.Data.Link>())
+            {
+                <tr>
+                    <td class="m-1"><span class="fw-bolder">@item.ClickCounter</span></td>
+                    <td class="m-1">@item.Description</td>
+                    <td class="small m-1 d-none d-md-block">@item.RedirectToURL</td>
+                </tr>
+            }
+        </table>
+    </div>
+
+    @code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Type { get; set; }
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    long? linkCount { get; set; }
+    long? clickedLongCount { get; set; }
+    long? notClickedLongCount { get; set; }
+    long? clickedPercent { get; set; }
+    long? notClickedPercent { get; set; }
+    long? collectedCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        linkCount = (await LinkService.GetLinksAsync() ?? new()).LongCount();
+        clickedLongCount = (await LinkService.GetLinksAsync() ?? new()).Where(x => x.LinkWasClicked == true).LongCount();
+        notClickedLongCount = (await LinkService.GetLinksAsync() ?? new()).Where(x => x.LinkWasClicked == false).LongCount();
+        clickedPercent = (long?)((clickedLongCount / (linkCount == 0.0 ? 1.0 : linkCount)) * 100);
+        notClickedPercent = (long?)((notClickedLongCount / (linkCount == 0.0 ? 1.0 : linkCount)) * 100);
+        collectedCount = await CollectorService.GetCollectedDataCountAsync();
+    }
+
+    string SingularOrPlural(long? num)
+    {
+        if (num == 1)
+            return string.Empty;
+        else
+            return "s";
+    }
+}

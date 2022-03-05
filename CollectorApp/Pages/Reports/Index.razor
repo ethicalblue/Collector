@@ -1,0 +1,73 @@
+﻿@page "/reports"
+@inject LinkService LinkService
+@inject LoginService LoginService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Reports</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/reports" />
+    return;
+}
+
+<h2><span class="fa fa-print text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> Reports</h2>
+
+<div class="text-silver mt-2 mb-2">Generate reports for selected campaigns</div>
+
+<div class="text-silver mt-2 mb-2">Select link campaign identifier</div>
+@foreach (var campaignItem in LinkCampaignList)
+{
+    if (campaignItem == null)
+        continue;
+
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="reports/linkcampaign/@campaignItem">@campaignItem &raquo;</a>
+    </div>
+}
+<div class="text-silver mt-2 mb-2">or select file campaign identifier</div>
+@foreach (var campaignItem in FileCampaignList)
+{
+    if (campaignItem == null)
+        continue;
+
+    <div class="lead ms-4">
+        <span class="fa fa-biohazard text-blue"></span> <a href="reports/filecampaign/@campaignItem">@campaignItem &raquo;</a>
+    </div>
+}
+
+<div class="d-flex mt-3">
+    <div class="p-3 bg-semi-dark flex-shrink-1">
+        <span class="fa fa-info-circle text-silver"></span> Probably every boss and customer likes to have it all served on a plate. On this page you can generate the necessary reports.
+    </div>
+</div>
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    string? TargetName { get; set; }
+    string? PentesterName { get; set; }
+
+    List<string?> LinkCampaignList = new();
+    List<string?> FileCampaignList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await GetCampaignListsAsync();
+    }
+
+    private async Task GetCampaignListsAsync()
+    {
+        LinkCampaignList = await LinkService.GetCampaignsAsync() ?? new();
+        FileCampaignList = await CollectorService.GetCampaignsAsync() ?? new();
+    }
+}

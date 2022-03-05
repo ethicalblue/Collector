@@ -1,0 +1,107 @@
+﻿@page "/collected/export"
+@using System.IO
+@inject IJSRuntime JS
+@inject LoginService LoginService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Collected data</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/collected/export" />
+    return;
+}
+
+<h2><a class="btn btn-link" href="collected">&laquo; Back</a> <span class="fa fa-folder text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> Export collected data</h2>
+
+@foreach (var campaign in CampaignList)
+{
+    <div>Campaign: @campaign</div>
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Guid</td>
+                <td class="m-1">User</td>
+                <td class="m-1">Machine</td>
+                <td class="m-1">DateTime</td>
+                <td class="m-1">BIOS Serial Number</td>
+            </tr>
+            @foreach (var data in CollectedData.Where(x => x.Campaign == campaign).OrderBy(x => x.Id))
+            {
+                <tr>
+                    <td><span class="text-nowrap text-white"><span class="fa fa-biohazard text-white"></span> @data.Id</span></td>
+                    <td class="font-monospace">@data.UserName</td>
+                    <td class="font-monospace">@data.MachineName</td>
+                    <td>@data.CollectedDateTime</td>
+                    <td class="font-monospace">
+                        @data.BIOSSerialNumber
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="mb-3">
+        <button class="btn btn-dark" @onclick="() => DownloadFileFromStream(campaign ?? string.Empty)">Download data as .csv file</button>
+    </div>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+
+    List<Collected> CollectedData = new();
+
+    List<string?> CampaignList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await GetCampaignListAsync();
+    }
+
+    private async Task GetCampaignListAsync()
+    {
+        CampaignList = (await CollectorService.GetCampaignsAsync() ?? new()).OrderBy(x => x).ToList();
+
+        CollectedData = (await CollectorService.GetCollectedDataAsync() ?? new()).OrderBy(x => x.Id).ToList();
+    }
+
+    private Stream GetFileStream()
+    {
+        var randomBinaryData = new byte[50 * 1024];
+        var fileStream = new MemoryStream(randomBinaryData);
+
+        return fileStream;
+    }
+
+    private async Task DownloadFileFromStream(string selectedCampaign)
+    {
+        string text = "sep=;" + Environment.NewLine;
+
+        text += "Guid;Campaign;UserName;MachineName;CollectedDateTime;BIOSSerialNumber;HostnameIP" + Environment.NewLine;
+
+        foreach (var data in CollectedData.Where(x => x.Campaign == selectedCampaign).OrderBy(x => x.Id))
+        {
+            text += data.Id + ";" + data.Campaign + ";" + data.UserName + ";" + data.MachineName+ ";" + 
+                    data.CollectedDateTime + ";" + data.BIOSSerialNumber + ";" + data.HostnameIP + Environment.NewLine;
+        }
+
+        var fileStream = new MemoryStream(System.Text.Encoding.Unicode.GetBytes(text));
+        var fileName = "collectedData.csv";
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+        //function downloadFileFromStream is placed in _Layout.cshtml
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+}

@@ -1,0 +1,123 @@
+﻿@page "/links/edit/{campaign?}/{linkid?}"
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Links</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/links" />
+    return;
+}
+
+@if (LinkId != null)
+{
+    <h2><a class="btn btn-link" href="links/details/@Campaign/@LinkId">&laquo; Back</a> <span class="fa fa-link text-secondary"></span> Details: @Campaign/@LinkId</h2>
+
+    <div class="table-responsive">
+        <table class="table text-white bg-semi-dark table-hover">
+            <tr class="bg-dark">
+                <td class="m-1">Name</td>
+                <td class="m-1">Value</td>
+            </tr>
+            <tr>
+                <td>Guid</td>
+                <td>@SelectedLink.Id</td>
+            </tr>
+            <tr>
+                <td>Hostname/IP</td>
+                <td>@SelectedLink.HostnameIP</td>
+            </tr>
+            <tr>
+                <td>Last active</td>
+                <td>@SelectedLink.ClickedDateTime</td>
+            </tr>
+            <tr>
+                <td>Clicked?</td>
+                <td>
+                    @if (SelectedLink.LinkWasClicked ?? false)
+                    {
+                        <span class="text-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">No</span>
+                    }
+                    [@SelectedLink.ClickCounter]
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mt-1 mb-3">
+        <h3>Reset click counter</h3>
+        <button class="btn btn-danger" @onclick="ZeroClickCounterAsync">Click here to reset click counter</button>
+    </div>
+
+    <h3>Edit text fields</h3>
+
+    <form @onsubmit="UpdateSelectedLinkAsync">
+        <div class="mb-2">
+            <label class="lead">
+                Campaign<br />
+                <input @bind="SelectedLink.Campaign" type="text" class="form-control short-control mt-1 mb-2" />
+            </label>
+        </div>
+        <div class="mb-2">
+            <label class="lead">
+                Description<br />
+                <input @bind="SelectedLink.Description" type="text" class="form-control short-control mt-1 mb-2" />
+            </label>
+        </div>
+        <div class="mb-2">
+            <label class="lead">
+                RedirectToURL<br />
+                <input @bind="SelectedLink.RedirectToURL" type="text" class="form-control short-control mt-1 mb-2" />
+            </label>
+        </div>
+
+        <button class="btn btn-dark" type="submit">Save changes</button>
+    </form>
+}
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    [Parameter]
+    public string? Campaign { get; set; }
+    [Parameter]
+    public string? LinkId { get; set; }
+
+    Link SelectedLink = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        if (LinkId != null)
+        {
+            SelectedLink = await LinkService.GetLinkAsync(int.Parse(LinkId)) ?? new();
+        }
+    }
+
+    private async Task UpdateSelectedLinkAsync()
+    {
+        SelectedLink.Campaign = LinkHelpers.MakeStringURLFriendly(SelectedLink.Campaign ?? "empty");
+
+        await LinkService.UpdateLinkAsync(SelectedLink);
+        NavigationManager.NavigateTo("/links/campaign/" + Campaign, true);
+    }
+
+    private async Task ZeroClickCounterAsync()
+    {
+        await LinkService.ZeroClickCounterAsync(SelectedLink);
+        NavigationManager.NavigateTo("/links/details/" + Campaign + "/" + LinkId, true);
+    }
+}

@@ -1,0 +1,154 @@
+﻿@page "/archived"
+@inject LoginService LoginService
+@inject LinkService LinkService
+@inject CollectorService CollectorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Archived</PageTitle>
+
+@if(IsAuthenticated == null)
+{
+    <span>Loading...</span>
+    return;
+}
+
+@if(IsAuthenticated == false)
+{
+    <LoginPrompt Redirect="/archived" />
+    return;
+}
+
+<h2><span class="fa fa-archive text-secondary"></span> Archived</h2>
+
+<div class="text-silver mt-2 mb-2">Move selected campaigns to archive</div>
+
+<h3><span class="fa fa-link text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> Link campaigns</h3>
+<div class="row mb-2 mt-2">
+    <div class="col-md-6">
+        <h4><span class="fa fa-fa-biohazard text-blue"></span> Active</h4>
+        <div class="table-responsive">
+            <table class="table text-white bg-semi-dark table-hover">
+                <tr class="bg-dark">
+                    <td class="m-1">Campaign</td>
+                    <td class="m-1">Action</td>
+                </tr>
+                @foreach (var item in LinkCampaignList)
+                {
+                    <tr>
+                        <td>@item</td>
+                        <td><a href="archived" @onclick="(() => ArchiveSelectedLinkCampaignAsync(item ?? string.Empty))">Move to archive &raquo;</a></td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h4><span class="fa fa-fa-biohazard text-secondary"></span> Archived</h4>
+        <div class="table-responsive">
+            <table class="table text-white bg-semi-dark table-hover">
+                <tr class="bg-dark">
+                    <td class="m-1">Campaign</td>
+                    <td class="m-1">Action</td>
+                </tr>
+                @foreach (var item in ArchivedLinkCampaignList)
+                {
+                    <tr>
+                        <td>@item</td>
+                        <td><a href="archived" @onclick="(() => RestoreSelectedLinkCampaignAsync(item ?? string.Empty))">Restore from archive &raquo;</a></td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+<h3><span class="fa fa-folder text-secondary"></span><span class="fa fa-biohazard text-secondary"></span> File campaigns</h3>
+<div class="row">
+    <div class="col-md-6">
+        <h4><span class="fa fa-fa-biohazard text-blue"></span> Active</h4>
+        <div class="table-responsive">
+            <table class="table text-white bg-semi-dark table-hover">
+                <tr class="bg-dark">
+                    <td class="m-1">Campaign</td>
+                    <td class="m-1">Action</td>
+                </tr>
+                @foreach (var item in FileCampaignList)
+                {
+                    <tr>
+                        <td>@item</td>
+                        <td><a href="archived" @onclick="(() => ArchiveSelectedFileCampaignAsync(item ?? string.Empty))">Move to archive &raquo;</a></td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h4><span class="fa fa-fa-biohazard text-secondary"></span> Archived</h4>
+        <div class="table-responsive">
+            <table class="table text-white bg-semi-dark table-hover">
+                <tr class="bg-dark">
+                    <td class="m-1">Campaign</td>
+                    <td class="m-1">Action</td>
+                </tr>
+                @foreach (var item in ArchivedFileCampaignList)
+                {
+                    <tr>
+                        <td>@item</td>
+                        <td><a href="archived" @onclick="(() => RestoreSelectedFileCampaignAsync(item ?? string.Empty))">Restore from archive &raquo;</a></td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private bool? IsAuthenticated { get; set; }
+
+    List<string?> LinkCampaignList = new();
+    List<string?> FileCampaignList = new();
+
+    List<string?> ArchivedLinkCampaignList = new();
+    List<string?> ArchivedFileCampaignList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthenticated = await LoginService.IsAuthenticated(ProtectedStorage);
+
+        await GetCampaignListsAsync();
+    }
+
+    private async Task GetCampaignListsAsync()
+    {
+        LinkCampaignList = await LinkService.GetCampaignsAsync() ?? new();
+        FileCampaignList = await CollectorService.GetCampaignsAsync() ?? new();
+
+        ArchivedLinkCampaignList = await LinkService.GetArchivedCampaignsAsync() ?? new();
+        ArchivedFileCampaignList = await CollectorService.GetArchivedCampaignsAsync() ?? new();
+    }
+
+    private async Task ArchiveSelectedLinkCampaignAsync(string campaign)
+    {
+        await LinkService.ArchiveOrRestoreCampaignAsync(campaign, true);
+        NavigationManager.NavigateTo("/archived", true);
+    }
+
+    private async Task RestoreSelectedLinkCampaignAsync(string campaign)
+    {
+        await LinkService.ArchiveOrRestoreCampaignAsync(campaign, false);
+        NavigationManager.NavigateTo("/archived", true);
+    }
+
+    private async Task ArchiveSelectedFileCampaignAsync(string campaign)
+    {
+        await CollectorService.ArchiveOrRestoreCampaignAsync(campaign, true);
+        NavigationManager.NavigateTo("/archived", true);
+    }
+
+    private async Task RestoreSelectedFileCampaignAsync(string campaign)
+    {
+        await CollectorService.ArchiveOrRestoreCampaignAsync(campaign, false);
+        NavigationManager.NavigateTo("/archived", true);
+    }
+}
