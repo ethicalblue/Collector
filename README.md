@@ -1,4 +1,4 @@
-# CollectorApp (ASP.NET Core Blazor)
+# Collector
 Phishing simulations and pentests with this Blazor app. 🛡️ 🧪 
 
 // by [ethical.blue](https://ethical.blue/)
