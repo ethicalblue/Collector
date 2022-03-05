@@ -1,10 +1,32 @@
 # CollectorApp (ASP.NET Core Blazor)
 Phishing and pentests without a harm with awesome Blazor app
 
+![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/live.png)
+
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/blazor.png)
 
-# Live preview
-![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/live.png)
+## Sample application scenario
+
+Overview of example phishing simulation (pentest) using Collector application.
+
+0x01. Complete documents with company or people which will be pentested. Act legally.
+
+0x02. Prepare e-mail addresses (you can buy domains), message templates and program or script to send e-mails. You can also sent e-mails manually.
+
+Here comes Collector application. :-)
+
+0x03. Create campaigns and links in Collector app web panel.
+
+0x04. Embed links in messages and send prepared e-mails to targets.
+
+0x05. Monitor which links have been clicked. There will be also IP addresses and timestamps collected.
+
+0x06. Print elegant reports for your boss/customer.
+
+0x07. Educate employees and retest on a regular basis.
+
+# Version history
+v1.0 — Initial release
 
 # Features
 + Mobile friendly web control panel protected with password
@@ -14,9 +36,15 @@ Phishing and pentests without a harm with awesome Blazor app
 + Monitor executed files with file campaigns
 + Show to your boss/customer elegant reports
 + Move completed campaigns to archive
-+ No expensive MS SQL database needed (app uses files)
++ No expensive MS SQL database needed (app uses file)
+
+# Hosting requirements
+Collector is ASP.NET Core Blazor Server application for .NET 6.0
 
 # Web interface
+
+## Mobile friendly
+![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/mobilefriendly1.png)
 
 ## Login form
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector1.png)
