@@ -1,5 +1,6 @@
 # CollectorApp (ASP.NET Core Blazor)
-Phishing and pentests without a harm with awesome Blazor app
+Phishing simulations and pentests with this Blazor app. 🛡️ 🧪 
+// by [ethical.blue](https://ethical.blue/)
 
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/live.png)
 
@@ -13,7 +14,7 @@ Overview of example phishing simulation (pentest) using Collector application.
 
 0x02. Prepare e-mail addresses (you can buy domains), message templates and program or script to send e-mails. You can also sent e-mails manually.
 
-Here comes Collector application. :-)
+Here comes Collector application. 🙂
 
 0x03. Create campaigns and links in Collector app web panel.
 
