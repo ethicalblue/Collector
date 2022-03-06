@@ -1,5 +1,5 @@
 # Collector
-Phishing simulations and pentests with this Blazor app. 🛡️ 🧪 
+Phishing simulations and pentests with awesome Blazor app 🛡️ 🧪 
 
 // by [ethical.blue](https://ethical.blue/)
 
