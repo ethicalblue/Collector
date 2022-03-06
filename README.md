@@ -44,29 +44,37 @@ v1.0 — Initial release
 Collector is ASP.NET Core Blazor Server application for .NET 6.0
 
 # Web interface
+Enjoy mobile friendly Collector interface.
 
 ## Mobile friendly
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/mobilefriendly1.png)
 
 ## Login form
+Web control panel is password protected.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector1.png)
 
 ## Incorrect login detection
+Monitor attacks on login panel with incorrect login detection.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector2.png)
 
 ## Links organized into campaigns
+Organize your links into campaigns for clarity and easy management.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector3.png)
 
 ## Link details
+There are a lot of link details including IP addresses and timestamp.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector4.png)
 
 ## File campaigns
+File campaigns allow you to monitor executed (harmless) payloads on tested machines.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector5.png)
 
 ## View data collected during file campaigns
+Executable used in file campaigns collects username, machinename and BIOS serial number.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector6.png)
 
 ## Create elegant reports
+Probably every boss and customer likes to have it all served on a plate.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector7.png)
 
 ## Sample link campaign report
@@ -76,10 +84,13 @@ Collector is ASP.NET Core Blazor Server application for .NET 6.0
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector9.png)
 
 ## Move old campaigns to archive
+Completed campaigns can be moved to archive for clarity.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector10.png)
 
 ## Harmless executable for file campaigns
+Payload provided for file campaigns is NOT malware.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector11.png)
 
 ## Printing reports
+Print pentest reports if you need paper version of documents.
 ![image](https://github.com/ethicalblue/CollectorApp/blob/main/images/collector12.png)
