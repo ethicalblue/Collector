@@ -105,7 +105,7 @@ tr:hover {
     }
 
 .short-control {
-    width: 21em;
+    max-width: 21em;
 }
 
 code {
