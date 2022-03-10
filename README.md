@@ -10,6 +10,10 @@ Phishing simulations and pentests with awesome Blazor app 🛡️ 🧪
 # Demo account
 Attached database file has some sample data. Login credentials are login: `demo` and password: `demo`.
 
+# Deploying Collector application to web server
+
+Tutorial here: [https://ethical.blue/textz/n/5](https://ethical.blue/textz/n/5)
+
 ## Sample application scenario
 
 Overview of example phishing simulation (pentest) using Collector application.
